@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CorpSystem — Sistema corporativo de gestão de pessoas e colaboradores para RH." />
+  <title>CorpSystem — Gestão de Pessoas</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏢</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- App Root Layout -->
+  <template id="template-app-root">
+    <div class="app-root">
+      <aside class="sidebar" id="sidebar"></aside>
+      <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+        <div class="topbar"></div>
+        <main class="main" id="main-content"></main>
+      </div>
+    </div>
+  </template>
+
+  <!-- Sidebar -->
+  <template id="template-sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">CS</div>
+      <div>
+        <div class="sidebar-brand-title">CorpSystem</div>
+        <div class="sidebar-brand-sub">Gestão de Pessoas</div>
+      </div>
+    </div>
+    <nav class="nav" id="nav">
+      <button class="nav-btn" data-view="home">
+        <span class="nav-icon">🏠</span> Início
+      </button>
+      <button class="nav-btn" data-view="cadastro">
+        <span class="nav-icon">📝</span> Cadastro
+      </button>
+      <button class="nav-btn" id="btn-rh">
+        <span class="nav-icon">👥</span> Painel RH
+        <span class="lock-badge" id="lock-badge">🔒</span>
+      </button>
+    </nav>
+    <div class="rh-user-card" id="rh-user-card" style="display:none">
+      <div class="rh-user-avatar" id="rh-user-avatar"></div>
+      <div>
+        <div class="rh-user-name" id="rh-user-name"></div>
+        <div class="rh-user-cargo" id="rh-user-cargo"></div>
+      </div>
+      <button class="logout-btn" id="logout-btn" title="Sair">⏻</button>
+    </div>
+    <div class="sidebar-stats">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-funcionarios">0</div>
+        <div class="stat-label">Funcionários</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-cargos">0</div>
+        <div class="stat-label">Cargos</div>
+      </div>
+    </div>
+  </template>
+
+  <!-- Topbar -->
+  <template id="template-topbar">
+    <div class="topbar-left">
+      <div class="topbar-breadcrumb">CorpSystem / <span id="breadcrumb-label">Início</span></div>
+    </div>
+  </template>
+
+  <!-- Login Screen -->
+  <template id="template-login">
+    <div class="login-root">
+      <div class="login-left">
+        <div class="login-left-content">
+          <div class="brand">
+            <div class="brand-icon">CS</div>
+            <div>
+              <div class="brand-title">CorpSystem</div>
+              <div class="brand-sub">Gestão de Pessoas</div>
+            </div>
+          </div>
+          <h1 class="login-headline">Acesso exclusivo<br>para o time de RH</h1>
+          <p class="login-desc">Consulte e gerencie colaboradores com segurança. Somente usuários autorizados podem acessar o painel.</p>
+          <div class="login-features">
+            <div class="feature-item">🔒 Acesso seguro por credenciais</div>
+            <div class="feature-item">👥 Gestão completa de funcionários</div>
+            <div class="feature-item">📊 Busca e filtros avançados</div>
+          </div>
+        </div>
+      </div>
+      <div class="login-right">
+        <div class="login-card login-card-enter">
+          <div class="lock-icon">🔐</div>
+          <h2 class="card-title">Área Restrita</h2>
+          <p class="card-sub">Entre com suas credenciais de acesso</p>
+          <div class="field">
+            <label class="label-login">Usuário</label>
+            <input id="login-usuario" class="input-login" placeholder="rh@empresa.com" />
+          </div>
+          <div class="field">
+            <label class="label-login">Senha</label>
+            <div class="password-wrap">
+              <input id="login-senha" class="input-login" type="password" placeholder="••••••••" />
+              <button id="toggle-senha" class="eye-btn" type="button">👁</button>
+            </div>
+          </div>
+          <div class="error-box" id="login-error" style="display:none"><span>⚠️</span> <span id="login-error-text"></span></div>
+          <button id="btn-login" class="btn-login">Entrar no Painel</button>
+          <div class="hint"><strong>Demo:</strong> usuário <code class="code">admin</code> · senha <code class="code">admin123</code></div>
+          <button id="btn-voltar-login" class="btn-back">← Voltar</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- Home Page -->
+  <template id="template-home">
+    <div class="page">
+      <div class="hero-section stagger-item">
+        <div class="hero-tag">⚡ Sistema de RH</div>
+        <h1 class="hero-title">Gestão de Colaboradores</h1>
+        <p class="hero-desc">Cadastre funcionários de forma segura e consulte o time pelo painel exclusivo do RH.</p>
+        <div class="hero-actions">
+          <button class="btn-primary" id="go-cadastro">Cadastrar Funcionário</button>
+          <button class="btn-secondary" id="go-rh">🔒 Login do RH</button>
+        </div>
+      </div>
+      <div class="cards">
+        <div class="feature-card stagger-item">
+          <div class="feature-icon">🔒</div>
+          <div class="feature-title">Seguro</div>
+          <div class="feature-desc">Painel RH protegido por credenciais de acesso exclusivas.</div>
+        </div>
+        <div class="feature-card stagger-item">
+          <div class="feature-icon">⚡</div>
+          <div class="feature-title">Rápido</div>
+          <div class="feature-desc">Cadastro ágil em segundos com validação inteligente.</div>
+        </div>
+        <div class="feature-card stagger-item">
+          <div class="feature-icon">📊</div>
+          <div class="feature-title">Organizado</div>
+          <div class="feature-desc">Consulta com filtros avançados e busca em tempo real.</div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- Cadastro Form -->
+  <template id="template-cadastro-form">
+    <div class="page">
+      <div class="page-header stagger-item">
+        <div>
+          <h2 class="page-title">Cadastro de Funcionário</h2>
+          <p class="page-subtitle">Preencha os dados para registrar um novo colaborador.</p>
+        </div>
+      </div>
+      <div class="form-card stagger-item">
+        <div class="form-field">
+          <label class="label">Nome Completo</label>
+          <input id="nome" class="input" placeholder="Ex: Maria Silva Santos" />
+          <span class="error-msg" id="error-nome" style="display:none"></span>
+        </div>
+        <div class="form-field">
+          <label class="label">CPF</label>
+          <input id="cpf" class="input" placeholder="000.000.000-00" />
+          <span class="error-msg" id="error-cpf" style="display:none"></span>
+        </div>
+        <div class="form-field">
+          <label class="label">Cargo</label>
+          <select id="cargo" class="input">
+            <option value="">Selecione o cargo...</option>
+          </select>
+          <span class="error-msg" id="error-cargo" style="display:none"></span>
+        </div>
+        <div class="form-field">
+          <label class="label">Data de Nascimento</label>
+          <input id="dataNascimento" class="input" type="date" />
+          <span class="error-msg" id="error-dataNascimento" style="display:none"></span>
+        </div>
+        <div class="form-field">
+          <label class="label">Endereço</label>
+          <input id="endereco" class="input" placeholder="Ex: Rua Principal, 123" />
+          <span class="error-msg" id="error-endereco" style="display:none"></span>
+        </div>
+        <div class="form-field">
+          <label class="label">Salário (R$)</label>
+          <input id="salario" class="input" placeholder="Ex: 3500,00" />
+          <span class="error-msg" id="error-salario" style="display:none"></span>
+        </div>
+        <div class="form-field">
+          <label class="label">Data de Admissão</label>
+          <input id="dataAdmissao" class="input" type="date" />
+          <span class="error-msg" id="error-dataAdmissao" style="display:none"></span>
+        </div>
+        <button class="btn-submit" id="btn-submit">Cadastrar Funcionário</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- Cadastro Success -->
+  <template id="template-cadastro-success">
+    <div class="page">
+      <div class="success-card stagger-item">
+        <div class="success-check">✓</div>
+        <h3 class="success-title">Cadastro Realizado</h3>
+        <div class="avatar-large" id="success-avatar"></div>
+        <div class="success-name" id="success-name"></div>
+        <div class="success-cargo" id="success-cargo"></div>
+        <div class="success-cpf" id="success-cpf"></div>
+        <div class="success-date" id="success-date"></div>
+        <div class="success-actions">
+          <button class="btn-primary" id="novo-cadastro">Novo Cadastro</button>
+          <button class="btn-primary btn-success-alt" id="ver-painel">Ver no Painel</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- RH Page -->
+  <template id="template-rh">
+    <div class="page">
+      <div class="page-header stagger-item">
+        <div>
+          <h2 class="page-title">Painel de RH</h2>
+          <p class="page-subtitle" id="rh-subtitle">0 funcionário(s) cadastrado(s)</p>
+        </div>
+        <div class="rh-session-info">
+          <div class="rh-session-avatar" id="rh-session-avatar"></div>
+          <div>
+            <div class="rh-session-name" id="rh-session-name"></div>
+            <div class="rh-session-cargo" id="rh-session-cargo"></div>
+          </div>
+        </div>
+      </div>
+      <div class="rh-toolbar stagger-item">
+        <input id="search" class="search-input" placeholder="Buscar por nome, CPF ou cargo..." />
+        <select id="filterCargo" class="filter-select">
+          <option value="">Todos os cargos</option>
+        </select>
+        <select id="sortBy" class="filter-select">
+          <option value="data">Mais recentes</option>
+          <option value="nome">A–Z Nome</option>
+          <option value="cargo">A–Z Cargo</option>
+        </select>
+      </div>
+      <div id="rh-content"></div>
+    </div>
+  </template>
+
+  <!-- RH Table -->
+  <template id="template-rh-table">
+    <div class="table-wrap stagger-item">
+      <table class="table">
+        <thead><tr><th>Funcionário</th><th>CPF</th><th>Cargo</th><th>Nascimento</th><th>Endereço</th><th>Salário</th><th>Admissão</th><th>Data</th><th>Ação</th></tr></thead>
+        <tbody id="rh-table-body"></tbody>
+      </table>
+    </div>
+  </template>
+
+  <!-- RH Table Row -->
+  <template id="template-rh-row">
+    <tr class="row-enter">
+      <td>
+        <div class="func-cell">
+          <div class="avatar" id="row-avatar"></div>
+          <span class="func-name" id="row-name"></span>
+        </div>
+      </td>
+      <td class="td-mono" id="row-cpf"></td>
+      <td><span class="badge" id="row-badge"></span></td>
+      <td id="row-data" style="color:var(--text-muted);font-size:12px"></td>
+      <td><button class="delete-btn" data-delete="" title="Excluir">🗑️ Excluir</button></td>
+    </tr>
+  </template>
+
+  <!-- RH Empty State -->
+  <template id="template-rh-empty">
+    <div class="empty-state stagger-item">
+      <div class="empty-icon">👤</div>
+      <div class="empty-title" id="empty-title">Nenhum funcionário cadastrado</div>
+      <div class="empty-desc" id="empty-desc">Cadastre o primeiro funcionário.</div>
+      <button class="btn-primary" id="empty-go-cadastro">Cadastrar Funcionário</button>
+    </div>
+  </template>
+
+  <!-- Edit Modal -->
+  <template id="template-edit-modal">
+    <div class="modal-overlay" id="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title">Editar Colaborador</h3>
+          <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-field">
+            <label class="label">Nome Completo</label>
+            <input id="edit-nome" class="input" />
+          </div>
+          <div class="form-field">
+            <label class="label">CPF</label>
+            <input id="edit-cpf" class="input" />
+          </div>
+          <div class="form-field">
+            <label class="label">Cargo</label>
+            <select id="edit-cargo" class="input">
+              <option value="">Selecione o cargo...</option>
+              ${CARGOS.map(c => `<option value="${c}">${c}</option>`).join("")}
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="label">Data de Nascimento</label>
+            <input id="edit-dataNascimento" type="date" class="input" />
+          </div>
+          <div class="form-field">
+            <label class="label">Endereço</label>
+            <input id="edit-endereco" class="input" />
+          </div>
+          <div class="form-field">
+            <label class="label">Salário (R$)</label>
+            <input id="edit-salario" class="input" />
+          </div>
+          <div class="form-field">
+            <label class="label">Data de Admissão</label>
+            <input id="edit-dataAdmissao" type="date" class="input" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="modal-cancel">Cancelar</button>
+          <button class="btn-primary" id="modal-save">Salvar Alterações</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script src="script.js"></script>
+  <script src="api.js"></script>
+  <script>init();</script>
+</body>
+</html>
