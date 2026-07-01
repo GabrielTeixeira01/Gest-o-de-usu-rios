@@ -119,6 +119,24 @@ function escapeHtml(text) {
     .replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
 
+function toDateInputValue(date) {
+  if (!date) return "";
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "";
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatDateDisplay(date) {
+  if (!date) return "-";
+  if (typeof date === "string" && date.includes("/")) return date;
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return String(date);
+  return d.toLocaleDateString("pt-BR");
+}
+
 function getAnimationDirection(fromView, toView) {
   const fi = VIEW_ORDER.indexOf(fromView);
   const ti = VIEW_ORDER.indexOf(toView);
@@ -354,7 +372,7 @@ function renderTopbar() {
             ${Icons.bell}
             ${state.funcionarios.length > 0 ? '<div class="notification-dot"></div>' : ""}
           </button>
-          ${state.showNotifications ? renderNotifications() : ""}
+          ${renderNotifications()}
         </div>
         <div class="topbar-divider"></div>
         <div class="topbar-profile">
@@ -370,27 +388,27 @@ function renderNotifications() {
   const recent = [...state.funcionarios].sort((a, b) => b.id - a.id).slice(0, 5);
   if (recent.length === 0) {
     return `
-      <div class="notif-dropdown">
+      <div class="notif-dropdown${state.showNotifications ? ' notif-open' : ''}" id="notif-dropdown">
         <div class="notif-header">Notificações</div>
         <div class="notif-empty">Nenhum colaborador cadastrado ainda.</div>
       </div>
     `;
   }
   return `
-    <div class="notif-dropdown">
-      <div class="notif-header">Últimos cadastros</div>
-      <div class="notif-list">
-        ${recent.map((f, i) => `
-          <div class="notif-item ${i === 0 ? "notif-new" : ""}">
-            <div class="notif-avatar" style="background:${getCargoColor(f.cargo)}">${getInitials(f.nome)}</div>
-            <div class="notif-info">
-              <div class="notif-name">${escapeHtml(f.nome)}</div>
-              <div class="notif-detail">${escapeHtml(f.cargo)} · ${escapeHtml(f.data)}</div>
+    <div class="notif-dropdown${state.showNotifications ? ' notif-open' : ''}" id="notif-dropdown">
+        <div class="notif-header">Últimos cadastros</div>
+        <div class="notif-list">
+          ${recent.map((f, i) => `
+            <div class="notif-item ${i === 0 ? "notif-new" : ""}">
+              <div class="notif-avatar" style="background:${getCargoColor(f.cargo)}">${getInitials(f.nome)}</div>
+              <div class="notif-info">
+                <div class="notif-name">${escapeHtml(f.nome)}</div>
+                <div class="notif-detail">${escapeHtml(f.cargo)} · ${escapeHtml(f.data)}</div>
+              </div>
             </div>
-          </div>
-        `).join("")}
+          `).join("")}
+        </div>
       </div>
-    </div>
   `;
 }
 
@@ -470,7 +488,7 @@ function renderSidebar() {
   return `
     <aside class="sidebar">
       <div class="sidebar-brand">
-        <div class="sidebar-brand-icon">CS</div>
+        <div class="sidebar-brand-icon"><img src="cs.png"></div>
         <div>
           <div class="sidebar-brand-title">CorpSystem</div>
           <div class="sidebar-brand-sub">Gestão de Pessoas</div>
@@ -683,7 +701,7 @@ function renderDashboard() {
         <div class="chart-card stagger-item">
           <div class="chart-card-header">
             <div>
-              <span class="chart-card-title">Representação Setorial (Donut)</span>
+              <span class="chart-card-title">Representação Setorial</span>
               <div class="chart-card-subtitle">Percentual de alocação de equipe por cargo</div>
             </div>
           </div>
@@ -872,7 +890,7 @@ function renderRH() {
                 <th>Salário</th>
                 <th>Admissão</th>
                 <th>Cadastro</th>
-                <th style="width: 100px; text-align: center;">Ações</th>
+                <th style="width: 140px; text-align: center;">Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -890,11 +908,11 @@ function renderRH() {
                       ${escapeHtml(f.cargo)}
                     </span>
                   </td>
-                  <td style="color:var(--text-muted); font-size:12px;">${escapeHtml(f.dataNascimento || "-")}</td>
+                  <td style="color:var(--text-muted); font-size:12px;">${formatDateDisplay(f.dataNascimento)}</td>
                   <td style="color:var(--text-muted); font-size:12px;">${escapeHtml(f.endereco || "-")}</td>
                   <td style="color:var(--text-muted); font-size:12px;">R$ ${escapeHtml(f.salario || "-")}</td>
-                  <td style="color:var(--text-muted); font-size:12px;">${escapeHtml(f.dataAdmissao || "-")}</td>
-                  <td style="color:var(--text-muted); font-size:12px;">${escapeHtml(f.data)}</td>
+                  <td style="color:var(--text-muted); font-size:12px;">${formatDateDisplay(f.dataAdmissao)}</td>
+                  <td style="color:var(--text-muted); font-size:12px;">${formatDateDisplay(f.data)}</td>
                   <td>
                     <div style="display: flex; justify-content: center; gap: 4px;">
                       <button class="edit-btn" data-edit="${f.id}" title="Editar Colaborador">
@@ -946,7 +964,7 @@ function renderEditModal() {
           </div>
           <div class="form-field">
             <label class="label">Data de Nascimento</label>
-            <input id="edit-dataNascimento" type="date" class="input" value="${escapeHtml(f.dataNascimento || "")}" />
+            <input id="edit-dataNascimento" type="date" class="input" value="${toDateInputValue(f.dataNascimento)}" />
           </div>
           <div class="form-field">
             <label class="label">Endereço</label>
@@ -958,7 +976,7 @@ function renderEditModal() {
           </div>
           <div class="form-field">
             <label class="label">Data de Admissão</label>
-            <input id="edit-dataAdmissao" type="date" class="input" value="${escapeHtml(f.dataAdmissao || "")}" />
+            <input id="edit-dataAdmissao" type="date" class="input" value="${toDateInputValue(f.dataAdmissao)}" />
           </div>
         </div>
         <div class="modal-footer">
@@ -1131,8 +1149,11 @@ function bindAppEvents() {
   // Notifications
   document.getElementById("btn-notifications")?.addEventListener("click", e => {
     e.stopPropagation();
-    state.showNotifications = !state.showNotifications;
-    render();
+    const dropdown = document.getElementById("notif-dropdown");
+    if (dropdown) {
+      dropdown.classList.toggle("notif-open");
+      state.showNotifications = dropdown.classList.contains("notif-open");
+    }
   });
   // Edit action hooks
   document.querySelectorAll("[data-edit]").forEach(b => b.addEventListener("click", () => {
@@ -1149,9 +1170,10 @@ function bindAppEvents() {
 
 // FIX: Listener global de clique registrado UMA única vez, fora de bindAppEvents()
 document.addEventListener("click", () => {
-  if (state.showNotifications) {
+  const dropdown = document.getElementById("notif-dropdown");
+  if (dropdown && dropdown.classList.contains("notif-open")) {
+    dropdown.classList.remove("notif-open");
     state.showNotifications = false;
-    render();
   }
 });
 

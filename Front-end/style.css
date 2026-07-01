@@ -468,12 +468,16 @@ body {
   height: 32px;
   border-radius: var(--radius-md);
   background-color: var(--primary);
-  color: var(--text-on-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
-  font-size: 12.5px;
+  overflow: hidden;
+}
+
+.sidebar-brand-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .sidebar-brand-title {
@@ -745,6 +749,7 @@ body {
 }
 
 .notif-dropdown {
+  display: none;
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
@@ -756,6 +761,10 @@ body {
   z-index: 1000;
   animation: slideUpFade 0.2s ease;
   overflow: hidden;
+}
+
+.notif-dropdown.notif-open {
+  display: block;
 }
 
 .notif-header {
@@ -872,7 +881,7 @@ body {
 }
 
 .page {
-  max-width: 1040px;
+  max-width: 1280px;
   margin: 0 auto;
 }
 
